@@ -1,0 +1,147 @@
+package code_coach.handlers;
+
+import java.awt.Dialog;
+import java.util.HashSet;
+import java.util.Set;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IfStatement;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.eclipse.jdt.core.dom.WhileStatement;
+import org.eclipse.jface.text.IDocument;
+
+/**
+ * Our sample handler extends AbstractHandler, an IHandler base class.
+ * @see org.eclipse.core.commands.IHandler
+ * @see org.eclipse.core.commands.AbstractHandler
+ */
+
+public class SampleHandler2 extends AbstractHandler {
+	
+	/**
+	 * The constructor.
+	 */
+	public SampleHandler2() {
+	}
+
+	// Gets the Root and Project listing.  Not necessary, but still provides useful info for us
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		System.out.println("Welcome to CodeCoach!");
+		// Get the root of the workspace
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot root = workspace.getRoot();
+		// Get all projects in the workspace
+		IProject[] projects = root.getProjects();
+		// Loop over all projects, sending each one to printProjectInfo method
+		for (IProject project : projects) {
+			try {
+				getProjectInfo(project);
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	//Prints the project currently being worked on. Not necessary
+	private void getProjectInfo(IProject project) throws CoreException, JavaModelException {
+		// check if we have a Java project
+		if (project.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
+			IJavaProject javaProject = JavaCore.create(project);
+			getPackageInfos(javaProject);
+		}
+	}
+
+	//Prints the package information for the current project. Not necessary
+	private void getPackageInfos(IJavaProject javaProject) throws JavaModelException {
+		IPackageFragment[] packages = javaProject.getPackageFragments();
+		for (IPackageFragment mypackage : packages) {
+			// Package fragments include all packages in the
+			// classpath
+			// We will only look at the package from the source
+			// folder
+			// K_BINARY would include also included JARS, e.g.
+			// rt.jar
+			if (mypackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
+				getICompilationUnitInfo(mypackage);
+
+			}
+
+		}
+	}
+
+	//Prints the .java for the current package. Not necessary
+	private void getICompilationUnitInfo(IPackageFragment mypackage) throws JavaModelException {
+		for (ICompilationUnit unit : mypackage.getCompilationUnits()) {
+			parse(unit);
+		}
+	}
+
+	//Prints general information about the file we're working on
+	private void parse(ICompilationUnit unit) throws JavaModelException {
+		IResource resource = unit.getResource();
+		
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		parser.setSource(unit);
+		
+		final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+		
+		cu.accept(new ASTVisitor() {
+			
+			Set names = new HashSet();
+			
+			public boolean visit(VariableDeclarationFragment node) {
+				SimpleName name = node.getName();
+				this.names.add(name.getIdentifier());
+				int lineNum = cu.getLineNumber(name.getStartPosition());
+				System.out.println("Declaration of " + name + " at line " + lineNum);
+				System.out.println("Usage of " + node + " at line " + lineNum);
+				return false;
+			}
+			
+			public boolean visit(SimpleName node) {
+				int lineNum = cu.getLineNumber(node.getStartPosition());
+				System.out.println("Usage of " + node + " at line " + lineNum);
+				return false;
+			}
+			
+			public boolean visit(IfStatement node) {
+				int lineNum = cu.getLineNumber(node.getStartPosition());
+				System.out.println("Usage of if statement " + node + " at line " + lineNum);
+				return false;
+			}
+			
+			public boolean visit(WhileStatement node) {
+				int lineNum = cu.getLineNumber(node.getStartPosition());
+				System.out.println("Usage of while statement " + node + " at line " + lineNum);
+				return false;
+			}
+		});
+	}	
+	
+	private void makeMarker(IResource resource, String msg, int lineNum) throws CoreException {
+		IMarker m = resource.createMarker(IMarker.PROBLEM);
+		m.setAttribute(IMarker.LINE_NUMBER, lineNum);
+		m.setAttribute(IMarker.MESSAGE,  msg);
+	}
+}

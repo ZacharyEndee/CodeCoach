@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="Sample Category"
+            id="Code_Coach.commands.category">
+      </category>
+      <command
+            name="Run"
+            categoryId="Code_Coach.commands.category"
+            id="Code_Coach.commands.sampleCommand">
+      </command>
+       <command
+            name="Configure Rules"
+            categoryId="Code_Coach.commands.category"
+            id="Code_Coach.commands.configure">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="Code_Coach.commands.sampleCommand"
+            class="code_coach.handlers.CodeCoachASTHandler">
+      </handler>
+      <handler
+            commandId="Code_Coach.commands.configure"
+            class="code_coach.handlers.RuleConfigHandler">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="Code_Coach.commands.sampleCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               label="Code Coach!"
+               mnemonic="C"
+               id="Code_Coach.menus.sampleMenu">
+            <command
+                  commandId="Code_Coach.commands.sampleCommand"
+                  mnemonic="R"
+                  id="Code_Coach.menus.sampleCommand">
+            </command>
+            <command
+                  commandId="Code_Coach.commands.configure"
+                  mnemonic="C"
+                  id="Code_Coach.menus.configure">
+            </command>
+         </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="Code_Coach.toolbars.sampleToolbar">
+         </toolbar>
+      </menuContribution>
+   </extension>
+   <extension point="org.eclipse.core.resources.markers" id="ccmarker"
+	  name="My Marker">
+		<super type="org.eclipse.core.resources.marker"/>
+		<persistent value="false"/><attribute name="description"/>
+   </extension>
+	   <extension
+   		 point="org.eclipse.core.resources.markers"
+         id="marker"
+         name="marker">         
+      <super
+            type="org.eclipse.core.resources.textmarker">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+      		super="org.eclipse.ui.workbench.texteditor.warning"
+            markerType="Code_Coach.marker"
+            name="Code_Coach.markerAnnotation">
+      </type>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="Code_Coach.markerAnnotation"
+            colorPreferenceKey="markerAnnotation.color"
+            colorPreferenceValue="155,48,255"
+            contributesToHeader="true"
+            highlightPreferenceKey="markerAnnotation.highlight"
+            highlightPreferenceValue="false"
+            icon="icons/codeCoach.gif"
+            includeOnPreferencePage="true"
+            label="Code Coach Annotation"
+            overviewRulerPreferenceKey="markerAnnotation.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="markerAnnotation.text"
+            textPreferenceValue="true"
+            textStylePreferenceKey="markerAnnotation.style"
+            textStylePreferenceValue="SQUIGGLES"
+            verticalRulerPreferenceKey="markerAnnotation.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+   <extension point="org.eclipse.ui.views">
+        <view id="ccview"
+             name="Code Coach"
+          class="code_coach.view.CodeCoachView"/>
+	</extension>
+	<extension point="org.eclipse.ui.startup">
+     <startup class="code_coach.startup.CodeCoachStartup"/>
+   </extension>
+</plugin>

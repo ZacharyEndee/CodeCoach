@@ -1,0 +1,10 @@
+<Rules>
+	<Package name="cc.custom.rules">
+		<Rule name="ConstantsAreAllUppercase" type="VariableDeclaration" />
+		<Rule name="MethodLength" type="MethodDeclaration" />
+		<Rule name="LowerCaseLetterAtStartOfMethodName" type="MethodDeclaration" />	
+		<Rule name="MisplacedSemiColonOnIf" type="IfStatement" />		
+		<Rule name="MisplacedSemiColonOnWhile" type="WhileStatement" />
+		<Rule name="MisplacedSemiColonOnFor" type="ForStatement" />
+	</Package>
+</Rules>
